@@ -31,6 +31,16 @@ jobs:
             echo "HAS_PAT=true" >> $GITHUB_ENV
           fi
 
+      - name: Get Last Run Timestamp
+        run: |
+          if [ -z "${{ secrets.LAST_RUN_TIMESTAMP }}" ]; then
+            # If no secret is set, default to 1970...
+            echo "LAST_RUN_TIMESTAMP=1970-01-01T00:00:00Z" >> $GITHUB_ENV
+          else
+            # If secret is found, use it
+            echo "LAST_RUN_TIMESTAMP=${{ secrets.LAST_RUN_TIMESTAMP }}" >> $GITHUB_ENV
+          fi
+
       - name: Run Chronicle script
         env:
           SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
