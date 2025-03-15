@@ -23,10 +23,6 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Get Last Run Timestamp
-        run: |
-          echo "LAST_RUN_TIMESTAMP=$(date --utc -d '${{ secrets.LAST_RUN_TIMESTAMP }}' +%Y-%m-%dT%H:%M:%SZ || echo '1970-01-01T00:00:00Z')" >> $GITHUB_ENV
-
       - name: Run Chronicle script
         env:
           SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
@@ -36,9 +32,10 @@ jobs:
         run: |
           python main.py
 
-      - name: Update Last Run Timestamp
+      - name: Update Last Run Timestamp (PAT optional)
+        if: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         run: |
           echo "LAST_RUN_TIMESTAMP=$(date --utc +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_ENV
           gh secret set LAST_RUN_TIMESTAMP --body "$LAST_RUN_TIMESTAMP"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
