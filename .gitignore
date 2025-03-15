@@ -1,0 +1,5 @@
+# .gitignore
+mySecrets.py
+__pycache__/
+.cache-spotify
+.venv/

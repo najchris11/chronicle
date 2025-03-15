@@ -1,0 +1,35 @@
+name: Backlog Run
+
+on:
+  workflow_dispatch:
+    inputs:
+      start_date:
+        description: 'Backlog start date in YYYY-MM-DD format'
+        required: false
+        default: '2022-11-01'
+
+jobs:
+  run-backlog:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run backlog script
+        env:
+          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+          SPOTIFY_REFRESH_TOKEN: ${{ secrets.SPOTIFY_REFRESH_TOKEN }}
+        run: |
+          python backlog.py ${{ github.event.inputs.start_date }}
