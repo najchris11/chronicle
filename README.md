@@ -3,8 +3,7 @@
 Chronicle is a set of scripts that let you automatically log your Spotify liked songs into monthly playlists. It’s designed to help you chronicle your musical journey over time!
 
 > **Note:**  
-> Each user must use their own Spotify API credentials. This repository is meant as a template. Non-technical users may find it easier to follow the instructions provided here, or you might consider building a web app for an even smoother experience.
-
+> Each user must use their own Spotify API credentials. This repository is meant as a template.
 ---
 
 ## Overview of Scripts
