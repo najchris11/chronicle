@@ -23,6 +23,14 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Check if PAT is set
+        run: |
+          if [ -z "${{ secrets.PERSONAL_ACCESS_TOKEN }}" ]; then
+            echo "HAS_PAT=false" >> $GITHUB_ENV
+          else
+            echo "HAS_PAT=true" >> $GITHUB_ENV
+          fi
+
       - name: Run Chronicle script
         env:
           SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
@@ -33,7 +41,7 @@ jobs:
           python main.py
 
       - name: Update Last Run Timestamp (PAT optional)
-        if: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        if: env.HAS_PAT == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         run: |
