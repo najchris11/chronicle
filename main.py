@@ -103,12 +103,19 @@ def get_existing_playlist_tracks(sp, playlist_id):
     limit = 100
     offset = 0
     while True:
-        results = sp.playlist_tracks(playlist_id, fields="items.track.uri", limit=limit, offset=offset)
-        for item in results["items"]:
-            existing_tracks.add(item["track"]["uri"])
-        if not results["next"]:
+        results = sp.playlist_tracks(playlist_id, fields="items.track.uri, next", limit=limit, offset=offset)
+        
+        # Ensure 'items' key exists
+        if "items" in results:
+            for item in results["items"]:
+                existing_tracks.add(item["track"]["uri"])
+
+        # Check if 'next' exists before accessing it
+        if "next" not in results or not results["next"]:
             break
+
         offset += limit
+
     return existing_tracks
 
 def get_new_liked_tracks(sp, since_dt):
