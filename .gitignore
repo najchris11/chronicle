@@ -1,5 +1,24 @@
-# .gitignore
-mySecrets.py
+# Python-related
 __pycache__/
-.cache-spotify
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.sqlite
+*.db
+
+# Virtual Environments
 .venv/
+.env
+*.env
+
+# Spotipy OAuth cache
+.cache-spotify
+
+# Secrets file (if you manually store one)
+mySecrets.py
+
+# Ignore system files (macOS, Windows, and Linux)
+.DS_Store
+Thumbs.db
+*.swp

@@ -23,6 +23,21 @@ REDIRECT_URI = os.environ.get("SPOTIFY_REDIRECT_URI", "http://localhost:8888/cal
 SCOPE = "user-library-read playlist-modify-public playlist-modify-private"
 CACHE_PATH = ".cache-spotify"
 
+
+# Fetch last run timestamp from GitHub Secret
+LAST_RUN_TIMESTAMP = os.environ.get("LAST_RUN_TIMESTAMP", "1970-01-01T00:00:00Z")
+
+# Convert to datetime object
+last_run = datetime.fromisoformat(LAST_RUN_TIMESTAMP.replace("Z", "+00:00"))
+now = datetime.now(timezone.utc)
+
+# Ensure we always fetch from at least the last 26 hours
+if now - last_run < timedelta(hours=26):
+    last_run = now - timedelta(hours=26)
+
+print(f"Fetching liked tracks since: {last_run.isoformat()}")
+
+
 def get_spotify_client():
     """
     Returns an authenticated Spotify client using the refresh token.
@@ -79,6 +94,23 @@ def get_monthly_playlist_id(sp):
 
     return playlist_id
 
+
+def get_existing_playlist_tracks(sp, playlist_id):
+    """
+    Fetch existing tracks in the monthly playlist to prevent duplicates.
+    """
+    existing_tracks = set()
+    limit = 100
+    offset = 0
+    while True:
+        results = sp.playlist_tracks(playlist_id, fields="items.track.uri", limit=limit, offset=offset)
+        for item in results["items"]:
+            existing_tracks.add(item["track"]["uri"])
+        if not results["next"]:
+            break
+        offset += limit
+    return existing_tracks
+
 def get_new_liked_tracks(sp, since_dt):
     """
     Return a list of track URIs for liked songs added since a given datetime.
@@ -117,12 +149,16 @@ def main():
     # Determine the monthly playlist to use
     playlist_id = get_monthly_playlist_id(sp)
 
-    # Use timezone-aware datetime for UTC now, then subtract 1 day.
-    since_dt = datetime.now(timezone.utc) - timedelta(days=1)
-    new_tracks = get_new_liked_tracks(sp, since_dt)
+    # Fetch existing tracks in the playlist
+    existing_tracks = get_existing_playlist_tracks(sp, playlist_id)
+
+    new_tracks = get_new_liked_tracks(sp, last_run)
+
+    new_tracks = [track for track in new_tracks if track not in existing_tracks]
+
 
     if new_tracks:
-        print(f"Found {len(new_tracks)} new liked track(s) since {since_dt.isoformat()}.")
+        print(f"Found {len(new_tracks)} new liked track(s) since {last_run.isoformat()}.")
         add_tracks_to_playlist(sp, playlist_id, new_tracks)
     else:
         print("No new liked tracks found.")

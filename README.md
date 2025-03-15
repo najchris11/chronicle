@@ -28,8 +28,10 @@ After running, copy the refresh token and store it (for example, as a GitHub sec
 This script uses your stored credentials and refresh token to:
 - Refresh your access token automatically.
 - Check your current liked (saved) tracks.
-- Add any new liked songs (from the past day by default) to the current month’s playlist.
-- Playlists are named in the format `Month Year - Chronicle`.
+- Add any new liked songs **from the last 26 hours** to the current month’s playlist.
+- Prevents duplicate additions by checking if a track is already in the monthly playlist.
+- Uses a **GitHub Secret (`LAST_RUN_TIMESTAMP`)** to track the last run time and avoid re-processing the same songs.
+- Playlists are named in the format `Month Year - Chronicle`
 
 **Usage:**
 
@@ -59,25 +61,17 @@ python backlog.py 2023-01-01
 
 ---
 
-## Getting Started
+## Handling the `LAST_RUN_TIMESTAMP` GitHub Secret
 
-1. **Fork this repository** (or use it as a template) and clone it locally.
-2. **Create a Spotify Developer App:**
-   - Go to the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard/).
-   - Create a new app and note your **Client ID** and **Client Secret**.
-   - Add a redirect URI (e.g., `http://localhost:8888/callback`).
-3. **Obtain a Refresh Token:**
-   - Fill in your `CLIENT_ID` and `CLIENT_SECRET` in `get_oauth.py` (or set them as environment variables).
-   - Run the script and follow the instructions to get your refresh token.
-4. **Configure Environment Variables:**
-   - For local use, you can create a `.env` file or set environment variables in your terminal:
-     - `SPOTIFY_CLIENT_ID`
-     - `SPOTIFY_CLIENT_SECRET`
-     - `SPOTIFY_REFRESH_TOKEN`
-5. **Run the Scripts:**
-   - Use `get_oauth.py` once to get your token.
-   - Use `main.py` to update your current monthly playlist.
-   - Use `backlog.py` to backfill your liked songs starting from a specified date.
+Chronicle maintains a **GitHub Secret (`LAST_RUN_TIMESTAMP`)** to track when the script last ran. This prevents reprocessing the same liked songs multiple times.
+
+### **How It Works**
+- The workflow reads `LAST_RUN_TIMESTAMP` before running `main.py`.
+- If the secret is missing, it defaults to **fetching songs from the last 26 hours**.
+- After a successful run, the secret is updated with the latest timestamp.
+
+### **How to Reset the Timestamp**
+If you want to force the script to reprocess songs, delete the `LAST_RUN_TIMESTAMP` secret in **GitHub Settings > Secrets** and re-run the workflow.
 
 ---
 
@@ -116,13 +110,25 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Get Last Run Timestamp
+        run: |
+          echo "LAST_RUN_TIMESTAMP=$(date --utc -d '${{ secrets.LAST_RUN_TIMESTAMP }}' +%Y-%m-%dT%H:%M:%SZ || echo '1970-01-01T00:00:00Z')" >> $GITHUB_ENV
+
       - name: Run Chronicle script
         env:
           SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
           SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
           SPOTIFY_REFRESH_TOKEN: ${{ secrets.SPOTIFY_REFRESH_TOKEN }}
+          LAST_RUN_TIMESTAMP: ${{ env.LAST_RUN_TIMESTAMP }}
         run: |
           python main.py
+
+      - name: Update Last Run Timestamp
+        run: |
+          echo "LAST_RUN_TIMESTAMP=$(date --utc +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_ENV
+          gh secret set LAST_RUN_TIMESTAMP --body "$LAST_RUN_TIMESTAMP"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 ### 2. `backlog.yml` (Manual Backlog Processing)
@@ -173,4 +179,3 @@ jobs:
 - **`backlog.yml` is manually triggered** and lets you specify a backlog start date.
 
 ---
-
