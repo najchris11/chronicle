@@ -175,9 +175,3 @@ jobs:
 
 ---
 
-## Conclusion
-
-Chronicle offers both an ongoing process (`main.py`) for current updates and a backlog process (`backlog.py`) for retroactively logging your liked tracks. With clear instructions and separate GitHub Actions for automatic logging and manual backlogging, even non-technical users can get started with minimal setup (after obtaining their own Spotify API credentials).
-
-Feel free to fork, modify, or extend the project to better suit your needs!
-
