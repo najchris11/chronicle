@@ -1,6 +1,6 @@
 import os
 import spotipy
-import mySecrets
+# import mySecrets
 from spotipy.oauth2 import SpotifyOAuth
 from datetime import datetime, timedelta, timezone
 
