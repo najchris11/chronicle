@@ -24,6 +24,8 @@ REDIRECT_URI = os.environ.get("SPOTIFY_REDIRECT_URI", "http://localhost:8888/cal
 SCOPE = "playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-library-modify user-library-read"
 CACHE_PATH = ".cache-spotify"
 
+# Fetch last run timestamp from GitHub Secret
+LAST_RUN_TIMESTAMP = os.environ.get("LAST_RUN_TIMESTAMP") or (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
 # Convert to datetime object
 last_run = datetime.fromisoformat(LAST_RUN_TIMESTAMP.replace("Z", "+00:00"))
 now = datetime.now(timezone.utc)
