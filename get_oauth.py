@@ -1,15 +1,15 @@
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
-# import mySecrets
+import mySecrets
 
 REDIRECT_URI = 'http://localhost:8888/callback'
-SCOPE = "user-library-read playlist-modify-public playlist-modify-private"
+SCOPE = "playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-library-modify user-library-read"
 
 sp_oauth = SpotifyOAuth(
-    # client_id=mySecrets.SPOTIFY_CLIENT_ID,
-    # client_secret=mySecrets.SPOTIFY_CLIENT_SECRET,
-    client_id = os.environ["SPOTIFY_CLIENT_ID"],
-    client_secret = os.environ["SPOTIFY_CLIENT_SECRET"],
+    client_id=mySecrets.SPOTIFY_CLIENT_ID,
+    client_secret=mySecrets.SPOTIFY_CLIENT_SECRET,
+    # client_id = os.environ["SPOTIFY_CLIENT_ID"],
+    # client_secret = os.environ["SPOTIFY_CLIENT_SECRET"],
     redirect_uri=REDIRECT_URI,
     scope=SCOPE,
     cache_path=".cache-spotify"  # This will cache the token info locally

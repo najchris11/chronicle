@@ -1,31 +1,21 @@
 import os
 import spotipy
-# import mySecrets
+import mySecrets
 from spotipy.oauth2 import SpotifyOAuth
 from datetime import datetime, timedelta, timezone
 
-# # Configuration: these should be set as environment variables
-# CLIENT_ID = mySecrets.SPOTIFY_CLIENT_ID
-# CLIENT_SECRET = mySecrets.SPOTIFY_CLIENT_SECRET
-# REFRESH_TOKEN = mySecrets.SPOTIFY_REFRESH_TOKEN
-# # The redirect URI is still needed for constructing the OAuth object even if it won't be used interactively.
-# REDIRECT_URI = os.environ.get("SPOTIFY_REDIRECT_URI", "http://localhost:8888/callback")
-# # Define required scope
-# SCOPE = "user-library-read playlist-modify-public playlist-modify-private"
-# # Cache path (not used interactively now, but required for SpotifyOAuth)
-# CACHE_PATH = ".cache-spotify"
-
-# Configuration: These should be set as environment variables
-CLIENT_ID = os.environ["SPOTIFY_CLIENT_ID"]
-CLIENT_SECRET = os.environ["SPOTIFY_CLIENT_SECRET"]
-REFRESH_TOKEN = os.environ["SPOTIFY_REFRESH_TOKEN"]
+# Configuration: these should be set as environment variables
+CLIENT_ID = mySecrets.SPOTIFY_CLIENT_ID
+CLIENT_SECRET = mySecrets.SPOTIFY_CLIENT_SECRET
+REFRESH_TOKEN = mySecrets.SPOTIFY_REFRESH_TOKEN
+# The redirect URI is still needed for constructing the OAuth object even if it won't be used interactively.
 REDIRECT_URI = os.environ.get("SPOTIFY_REDIRECT_URI", "http://localhost:8888/callback")
-SCOPE = "user-library-read playlist-modify-public playlist-modify-private"
+SCOPE = "playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-library-modify user-library-read"
 CACHE_PATH = ".cache-spotify"
 
 
 # Fetch last run timestamp from GitHub Secret
-LAST_RUN_TIMESTAMP = os.environ.get("LAST_RUN_TIMESTAMP", "1970-01-01T00:00:00Z")
+LAST_RUN_TIMESTAMP = os.environ.get("LAST_RUN_TIMESTAMP") or (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
 
 # Convert to datetime object
 last_run = datetime.fromisoformat(LAST_RUN_TIMESTAMP.replace("Z", "+00:00"))
@@ -52,7 +42,7 @@ def get_spotify_client():
     # Use the stored refresh token to get a new access token.
     token_info = sp_oauth.refresh_access_token(REFRESH_TOKEN)
     access_token = token_info["access_token"]
-    return spotipy.Spotify(auth=access_token)
+    return spotipy.Spotify(auth=access_token, requests_timeout=30)
 
 def get_monthly_playlist_id(sp):
     """
@@ -73,11 +63,12 @@ def get_monthly_playlist_id(sp):
     offset = 0
     while True:
         playlists = sp.current_user_playlists(limit=limit, offset=offset)
-        for playlist in playlists["items"]:
-            if playlist["name"] == playlist_name:
-                playlist_id = playlist["id"]
+        # print(playlists)
+        for playlist in playlists['items']:
+            if playlist['name'] == playlist_name:
+                playlist_id = playlist['id']
                 break
-        if playlist_id or not playlists["next"]:
+        if playlist_id or not playlists['next']:
             break
         offset += limit
 
@@ -89,7 +80,7 @@ def get_monthly_playlist_id(sp):
             public=False,
             description="Monthly log of liked songs created by Chronicle"
         )
-        playlist_id = new_playlist["id"]
+        playlist_id = new_playlist['id']
         print(f"Created new playlist: {playlist_name}")
 
     return playlist_id
