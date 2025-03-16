@@ -4,18 +4,29 @@ import mySecrets
 from spotipy.oauth2 import SpotifyOAuth
 from datetime import datetime, timedelta, timezone
 
-# Configuration: these should be set as environment variables
+# # Configuration: these should be set as environment variables
+ # CLIENT_ID = mySecrets.SPOTIFY_CLIENT_ID
+ # CLIENT_SECRET = mySecrets.SPOTIFY_CLIENT_SECRET
+ # REFRESH_TOKEN = mySecrets.SPOTIFY_REFRESH_TOKEN
+ # # The redirect URI is still needed for constructing the OAuth object even if it won't be used interactively.
+ # REDIRECT_URI = os.environ.get("SPOTIFY_REDIRECT_URI", "http://localhost:8888/callback")
+ # # Define required scope
+ # SCOPE = "playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-library-modify user-library-read"
+ # # Cache path (not used interactively now, but required for SpotifyOAuth)
+ # CACHE_PATH = ".cache-spotify"
+ 
+ # Configuration: These should be set as environment variables
+CLIENT_ID = os.environ["SPOTIFY_CLIENT_ID"]
+CLIENT_SECRET = os.environ["SPOTIFY_CLIENT_SECRET"]
+REFRESH_TOKEN = os.environ["SPOTIFY_REFRESH_TOKEN"]
+ # Configuration: these should be set as environment variables
 CLIENT_ID = mySecrets.SPOTIFY_CLIENT_ID
 CLIENT_SECRET = mySecrets.SPOTIFY_CLIENT_SECRET
 REFRESH_TOKEN = mySecrets.SPOTIFY_REFRESH_TOKEN
-# The redirect URI is still needed for constructing the OAuth object even if it won't be used interactively.
+ # The redirect URI is still needed for constructing the OAuth object even if it won't be used interactively.
 REDIRECT_URI = os.environ.get("SPOTIFY_REDIRECT_URI", "http://localhost:8888/callback")
 SCOPE = "playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-library-modify user-library-read"
 CACHE_PATH = ".cache-spotify"
-
-
-# Fetch last run timestamp from GitHub Secret
-LAST_RUN_TIMESTAMP = os.environ.get("LAST_RUN_TIMESTAMP") or (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
 
 # Convert to datetime object
 last_run = datetime.fromisoformat(LAST_RUN_TIMESTAMP.replace("Z", "+00:00"))
