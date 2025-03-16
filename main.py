@@ -19,10 +19,6 @@ from datetime import datetime, timedelta, timezone
 CLIENT_ID = os.environ["SPOTIFY_CLIENT_ID"]
 CLIENT_SECRET = os.environ["SPOTIFY_CLIENT_SECRET"]
 REFRESH_TOKEN = os.environ["SPOTIFY_REFRESH_TOKEN"]
- # Configuration: these should be set as environment variables
-CLIENT_ID = mySecrets.SPOTIFY_CLIENT_ID
-CLIENT_SECRET = mySecrets.SPOTIFY_CLIENT_SECRET
-REFRESH_TOKEN = mySecrets.SPOTIFY_REFRESH_TOKEN
  # The redirect URI is still needed for constructing the OAuth object even if it won't be used interactively.
 REDIRECT_URI = os.environ.get("SPOTIFY_REDIRECT_URI", "http://localhost:8888/callback")
 SCOPE = "playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-library-modify user-library-read"
