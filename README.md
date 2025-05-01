@@ -4,6 +4,23 @@ Chronicle is a set of scripts that let you automatically log your Spotify liked 
 
 > **Note:**  
 > Each user must use their own Spotify API credentials. This repository is meant as a template.
+
+---
+
+## ⚠️ Important: No Persistent Timestamp Needed
+
+By default, Chronicle **does not use a persistent timestamp**.  
+Each run fetches tracks from the last 24 hours (or 26 hours, as set in the code).  
+This makes the tool easy to fork and use for anyone, with no setup required.
+
+**Do not add a `LAST_RUN_TIMESTAMP` secret.**  
+Using a secret for the timestamp can cause unexpected behavior, such as:
+
+- The workflow using an old timestamp (due to GitHub Actions secrets only updating between runs, not during a run)
+- Tracks being missed or duplicated if the workflow fails or is run manually
+
+If you want to change the fetch window (e.g., fetch the last 7 days), you can edit the workflow or the code.
+
 ---
 
 ## Overview of Scripts
@@ -58,63 +75,6 @@ python backlog.py
 # Or specify a different start date (YYYY-MM-DD):
 python backlog.py 2023-01-01
 ```
-
----
-
-## Handling the `LAST_RUN_TIMESTAMP` GitHub Secret
-
-Chronicle maintains a **GitHub Secret (`LAST_RUN_TIMESTAMP`)** to track when the script last ran. This prevents reprocessing the same liked songs multiple times.
-
-### **How It Works**
-- The workflow reads `LAST_RUN_TIMESTAMP` before running `main.py`.
-- If the secret is missing, it defaults to **fetching songs from the last 26 hours**.
-- After a successful run, the secret is updated with the latest timestamp.
-
-### **How to Reset the Timestamp**
-If you want to force the script to reprocess songs, delete the `LAST_RUN_TIMESTAMP` secret in **GitHub Settings > Secrets** and re-run the workflow.
-
-### Using a Personal Access Token (PAT) to Update Secrets
-
-By default, GitHub Actions workflows cannot create or update secrets using the built-in `GITHUB_TOKEN` because it doesn't have the necessary permissions. If you want to automatically update the `LAST_RUN_TIMESTAMP` secret (or any other secret) within a workflow, you must create and use a Personal Access Token (PAT). *(Note: Using a PAT is optional. If you do not add one, the workflow can still run without updating the `LAST_RUN_TIMESTAMP` secret programmatically. You will need to reset or manage the timestamp manually or simply rely on the 26-hour default fetch window.)*
-
-#### 1. Generate a PAT
-1. Go to your [GitHub Developer Settings](https://github.com/settings/tokens).
-2. Click **Fine-grained personal access tokens** (or **Personal access tokens (classic)** if you don't see fine-grained tokens).
-3. **Generate new token** (and select **Fine-grained** or **Classic** depending on availability).
-4. Provide a descriptive name (e.g., `Chronicle Secret Updater`).
-5. Set the required scopes or repository permissions. For example:
-   - If using a classic PAT, select `repo` scope (and `workflow` if needed).
-   - If using a fine-grained PAT, give "Read and write" access to your target repository under "Repositories". Also enable "Actions → Read and write" access if you need to manage secrets.
-6. Generate your token and copy it somewhere safe (you won't be able to view it again once you leave the page).
-
-#### 2. Add the PAT as a Secret
-1. Open **Settings → Secrets and variables → Actions** in your repository.
-2. Click **New repository secret**.
-3. Set the name to something like `PERSONAL_ACCESS_TOKEN`.
-4. Paste in the PAT you generated.
-
-#### 3. Reference the PAT in Your Workflow
-In your workflow file (e.g., `.github/workflows/main.yml`), replace the usage of `GITHUB_TOKEN` with `PERSONAL_ACCESS_TOKEN`. For example:
-
-```yaml
-- name: Update Last Run Timestamp
-  env:
-    GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-  run: |
-    echo "LAST_RUN_TIMESTAMP=$(date --utc +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_ENV
-    gh secret set LAST_RUN_TIMESTAMP --body "$LAST_RUN_TIMESTAMP"
-```
-
-This ensures your workflow can authenticate with the required permissions to create or update GitHub secrets.
-
-#### 4. Test the Workflow
-1. Commit the updated workflow.
-2. Trigger it (manually or by schedule).
-3. Confirm the update step succeeds and the secret is updated ("Last updated X minutes ago" in your repository’s Secrets settings).
-
-With this setup, your `main.yml` or other workflows can safely manage secrets (such as `LAST_RUN_TIMESTAMP`) using your PAT. Just remember to keep your PAT secure!
-
----
 
 ## GitHub Actions
 
